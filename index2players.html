@@ -44,9 +44,11 @@
                     <div class="col-md-12">
                         <div class="panel panel-default">
                             <div class="panel-body" id="enterNames">
-                                <form class="form-group" id="player1Name">
+                                <!-- <form class="form-group" id="player1Name">
                                 </form>
                                 <form class="form-group" id="player2Name">
+                                </form> -->
+                                <form class="form-group" id="playerName">
                                 </form>
                             </div>
                         </div>
@@ -181,18 +183,21 @@
                         <div style="clear:both"></div>
                     </div>
 
-                    <div id="chatbox"></div>
+                    <div id="chatbox">
+                        <!-- <p id="play1Chat"></p> -->
+                        <!-- <p id="play2Chat"></p> -->
+                    </div>
 
                     <form name="message" action="">
-                            <label for="submitmsg1" id="chatName1">Player 1:</label>
+                        <label for="submitmsg1" id="chatName1">Player 1:</label>
                         <input name="userMsg" type="text" id="userMsg1" size="63" />
                         <input name="submitMsg" type="submit" id="submitMsg1" value="Send" />
                     </form>
                     <form name="message" action="">
-                            <label for="submitMsg2" id="chatName2">Player 2:</label>
-                            <input name="userMsg" type="text" id="userMsg2" size="63" />  
-                            <input name="submitMsg" type="submit" id="submitMsg2" value="Send" />
-                        </form>
+                        <label for="submitMsg2" id="chatName2">Player 2:</label>
+                        <input name="userMsg" type="text" id="userMsg2" size="63" />
+                        <input name="submitMsg" type="submit" id="submitMsg2" value="Send" />
+                    </form>
                 </div>
             </div>
         </div>
@@ -206,7 +211,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase.js"></script>
     <script src="https://cdn.jsdelivr.net/momentjs/2.12.0/moment.min.js"></script>
-    <script type="text/javascript" src="assets/javascript/rps.js"></script>
+    <script type="text/javascript" src="assets/javascript/rps_2players.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 

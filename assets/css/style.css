@@ -6,8 +6,13 @@ html {
 body {
     margin-bottom: 60px;
     background-color: #ffffff;
-    /* Change background image as needed */
-    /* background-image: */
+    color: #222;
+    padding:35px; 
+}
+
+.navbar-brand{
+    font-weight: bold;
+    font-size: 46px;
 }
 
 .page-header,
@@ -16,29 +21,81 @@ h1 {
     margin-top: 0px;
     font-size: 46px;
 }
-#chat{
-    background-color: #beb8b8;
-    font-family: 'Mako', Arial, "Helvetica Neue", Helvetica, sans-serif;
-    font-size: 18px;
-    color: black;
-    font-weight: bold;
-    text-align: left;
-    border: 2px solid black;
-    /* margin: 10px 10px 10px 10px; */
-}
-#chatWindow{
-    background-color: #beb8b8;
-    font-family: 'Mako', Arial, "Helvetica Neue", Helvetica, sans-serif;
-    font-size: 16px;
-    color: black;
-    text-align: left;
-    border: 2px solid black;
-    /* margin: 10px 10px 10px 10px; */
+
+.player {
+    color: red;
 }
 
-/* #player1, #rockP1{
-    white-space: nowrap;
-} */
+.playerAlt {
+    color: green;
+}
+
+.panel-title {
+   font-weight: bold;
+   color: rgb(15, 8, 122); 
+}
+
+/* CSS Document */
+/*   
+form, p, span {
+    margin:0;
+    padding:0; } */
+  
+input { font:12px arial; }
+  
+a {
+    color:#0000FF;
+    text-decoration:none; }
+  
+    a:hover { text-decoration:underline; }
+  
+#wrapper, #loginform {
+    margin:0 auto;
+    padding-bottom:25px;
+    background:#EBF4FB;
+    width:504px;
+    border:1px solid #ACD8F0; }
+  
+#loginform { padding-top:18px; }
+  
+    #loginform p { margin: 5px; }
+  
+#chatbox {
+    text-align:left;
+    margin:0 auto;
+    margin-bottom:25px;
+    padding:10px;
+    background:#fff;
+    height:270px;
+    width:430px;
+    border:1px solid #ACD8F0;
+    overflow:auto; }
+  
+#usermsg {
+    width:430px;
+    border:1px solid #ACD8F0; }
+  
+#submit { width: 60px; }
+  
+.error { color: #ff0000; }
+  
+#menu { padding:12.5px 25px 12.5px 25px; }
+  
+.welcome { float:left; }
+  
+.msgln { margin:0 0 2px 0; }
+
+#winMsg{
+    font-size: 36px;
+}
+
+#play1Chat{
+    background-color: rgb(248, 248, 167);
+}
+
+#play2Chat{
+    background-color: rgb(187, 238, 187);
+}
 
 .footer {
     position: absolute;

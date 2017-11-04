@@ -256,6 +256,19 @@ function prepareGameBoard() {
     });
 }
 
+function getKey(){
+    // playersRef.once("value", function (snapshot) {
+        database.child("game");
+       var clubkey = dataSnapshot.getKey();
+
+
+        console.log("im in getKey");
+    keyValue = gameRef.getKey();
+    console.log("keyValue " + keyValue);
+    keyValue2 = connectionsRef.getKey();
+    console.log("keyValue2 " + keyValue2);         
+        
+    }
 
 //----------------------//
 // main processing
@@ -265,29 +278,9 @@ $(document).ready(function () {
     if (brandNewGame) {
         //build the EnterNames Panel of HTML
         displayEnterNamePanel();
-        player1Name = "player1";
-        player1Ready = false;
-        player1ChoiceMade = false;
-        player1Choice = "";
-        player1WinCntr = 0;
-        player1LossCntr = 0;
-        player2Name = "player2";
-        player2Ready = false;
-        player2ChoiceMade = false;
-        player2Choice = "";
-        player2WinCntr = 0;
-        player2LossCntr = 0;
-        tieCntr = 0;
-        theInterval = 0;
-        secondsToWait = 5;
-        brandNewGame = false;
-        chatbox = '';
-        player1Chat = "";
-        player2Chat = "";
         updateDatabase();
     } else {
         console.log("nothing");
-
         //remove the EnterNames Panel of HTML and 
         //Build the rpsEntry Panel and
         //Build the rpsStats Panel
@@ -303,8 +296,8 @@ $(document).ready(function () {
         player1Ready = true;
         updateDatabase();
         prepareGameBoard();
-        // $("#player1").text(snapshot.val().player1Name + ":");
-        // $("#name1").text(snapshot.val().player1Name);
+        getKey();
+        
     });
 
     $("#player2Name").submit("#player2Nme", function (event) {
