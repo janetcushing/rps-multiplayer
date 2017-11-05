@@ -86,6 +86,7 @@ var timestamp;
 // display the panel for users to enter thier names
 //------------------------------------------------------//
 function displayEnterNamePanel() {
+    console.log("im in displayEnterNamePanel();");
     nameLabel = $("<label>");
     nameLabel.addClass("playerName");
     nameLabel.attr("for", "playerNameInput");
@@ -124,20 +125,25 @@ function displayrpsEntryPanel() {
 //------------------------------------------------------//
 // display the panel to display game stats
 //------------------------------------------------------//
-function displayrpsStatsPanel() {
-}
+function displayrpsStatsPanel() {}
 
 //------------------------------------------------------//
 // Remove a player if they click the exit button
+// Remove a chats if they click the exit button
 //------------------------------------------------------//
-function removePlayer() {
+function removePlayerAndChats() {
     removePlayerNumber = parseInt($("#exit").val());
     console.log("removePlayerNumber " + removePlayerNumber);
     database.ref("player").orderByChild("playerNumber").equalTo(removePlayerNumber).once('child_added', function (snapshot) {
         snapshot.ref.remove();
     });
+    console.log("removeChats ");
+    database.ref("chat").on('child_added', function (snap) {
+        snap.ref.remove();
+    });
     window.location = 'close.html';
 }
+
 
 //------------------------------------------------------//
 // add players to the player database.  Player database
@@ -155,15 +161,18 @@ function addPlayerToDatabase(playerName, playerReady, playerNumber) {
                 playerNumber = 1;
                 $("#exit").attr("value", playerNumber);
                 console.log("added playerNumber to exit button");
+                initGameBoardForPlayer1();
             } else if (playerCount === 1) {
 
                 var existingPlayer = snapshot.val().playerNumber;
                 if (existingPlayer === 1) {
                     playerNumber = 1;
                     $("#exit").attr("value", playerNumber);
+                    initGameBoardForPlayer1();
                 } else {
                     playerNumber = 2;
                     $("#exit").attr("value", playerNumber);
+                    initGameBoardForPlayer2();
                 }
                 // existingPlayerNum = activePlayers[0];
                 // if (existingPlayerNum === 1) {
@@ -194,7 +203,7 @@ function checkPlayerDatabase() {
         activePlayers = [];
         if (playerCount >= 2) {
             console.log("game is full");
-           
+
         }
         playerQuery.once("value").then(function (snap) {
             snap.forEach(function (snapshot) {
@@ -358,6 +367,8 @@ function determineWhoWins() {
     gameRef.once("value", function (snapshot) {
         if (snapshot.val().player1ChoiceMade && snapshot.val().player2ChoiceMade) {
             console.log("the choices have both been made");
+            $("#name1").text(snapshot.val().player1Name);
+            $("#name2").text(snapshot.val().player2Name);
             if (snapshot.val().player1Choice === "r") {
                 if (snapshot.val().player2Choice === "r") {
                     tieCntr = snapshot.val().tieCntr + 1;
@@ -462,51 +473,55 @@ function resetDatabaseForNextGame() {
     $('#player1').addClass("player");
     $('#player2').removeClass("playerAlt");
     $('#player2').addClass("player");
+
 }
 
 
 //--------------------------------------------------------//
-// initialize the gameboard once the players are ready
-// to play
+// initialize the gameboard for player 1
 //--------------------------------------------------------//
-function initGameBoard() {
-    console.log("players are ready");
-    $("#enterNames").remove();
-    playerQuery.on("child_added", function (snapshot) {
-        if (snapshot.val().playerNumber === 1) {
-            $("#player1").text(snapshot.val().playerName + ":");
-            $("#name1").text(snapshot.val().playerName);
-            $("#chatName1").text(snapshot.val().playerName + ":");
-            // $("#chatForm1").show();
-            // $("#chatName1").show();
-            // $("#userMsg1").show();
-            // $("#submitMsg1").show();
-            // $("#rps1").show();
-            // $("#chatForm2").hide();
-            // $("#chatName2").hide();
-            // $("#userMsg2").hide();
-            // $("#submitMsg2").hide();
-            // $("#rps2").hide();
-            player1Name = snapshot.val().playerName;
-            updateGameDatabaseP1Name();
-        } else {
-            $("#player2").text(snapshot.val().playerName + ":");
-            $("#name2").text(snapshot.val().playerName);
-            $("#chatName2").text(snapshot.val().playerName + ":");
-            // $("#chatForm2").show();
-            // $("#chatName2").show();
-            // $("#userMsg2").show();
-            // $("#submitMsg2").show();
-            // $("#rps2").show();
-            // $("#chatForm1").hide();
-            // $("#chatName1").hide();
-            // $("#userMsg1").hide();
-            // $("#submitMsg1").hide();
-            // $("#rps1").hide();
-            player2Name = snapshot.val().playerName;
-            updateGameDatabaseP2Name();
+function initGameBoardForPlayer1() {
+    console.log("players are ready1");
+    // $("#enterNames").remove();
+    $("#chatWindow").show();
+    database.ref("player").orderByChild("playerNumber").equalTo(1).once('child_added', function (snapshot) {
+        console.log("i got one row from player db");
+        $("#player1").text(snapshot.val().playerName + ":");
+        $("#name1").text(snapshot.val().playerName);
+        $("#chatName1").text(snapshot.val().playerName + ":");
+        $("#chatForm2").hide();
+        $("#chatName2").hide();    
+        $('#rpsStats').show();
+        $('#rpsEntry').show();
+        $("#rps2").hide();
+        player1Name = snapshot.val().playerName;
+        updateGameDatabaseP1Name();
+    });
+}
+//--------------------------------------------------------//
+// initialize the gameboard for player 2 
+//--------------------------------------------------------//
+function initGameBoardForPlayer2() {
+    console.log("players are ready2");
+    // $("#enterNames").remove();
+    $("#chatWindow").show();
+    database.ref("player").orderByChild("playerNumber").equalTo(2).once('child_added', function (snapshot) {
+        console.log("i got second row from player db");
+        console.log("snapshot.val()") + snapshot.val();
+        if (!snapshot.val() == ""){
+        $("#player2").text(snapshot.val().playerName + ":");
+        $("#name2").text(snapshot.val().playerName);
+        $("#chatName2").text(snapshot.val().playerName + ":");
+        $("#chatForm1").hide();
+        $("#chatName1").hide();
+        $('#rpsStats').show();
+        $("#rps1").hide();
+        $('#rpsEntry').show();
+        player2Name = snapshot.val().playerName;
+        updateGameDatabaseP2Name();
         }
     });
+
 }
 
 //------------------------------------------------//
@@ -523,6 +538,16 @@ function displayChat() {
         }
         chatbox.text(snapshot.val().playerName + ": " + snapshot.val().playerChat);
         $("#chatbox").append(chatbox);
+    });
+}
+
+//------------------------------------------------------//
+// Remove a chats if they click the exit button
+//------------------------------------------------------//
+function removeChats() {
+    console.log("removeChats ");
+    database.ref("chat").once('child_added', function (snapshot) {
+        snapshot.ref.remove();
     });
 }
 
@@ -556,6 +581,9 @@ $(document).ready(function () {
     if (brandNewGame) {
         //build the EnterNames Panel of HTML
         console.log("IN BRAND NEW GAME");
+        $('#rpsStats').hide();
+        $('#rpsEntry').hide();
+        $('#chatWindow').hide();
         initGameDatabase();
         displayEnterNamePanel();
         // $("#chatForm1").hide();
@@ -579,6 +607,8 @@ $(document).ready(function () {
         playerName = ($("#playerNme").val().trim().charAt(0).toUpperCase() +
             $("#playerNme").val().trim().substr(1).toLowerCase());
         console.log("player Name: " + playerName);
+        $("#playerTitle").attr("value", playerName);
+        $("#playerTitle").text(playerName + "'s game");
         playerReady = true;
         console.log("about to go into checkPlayerDatabase()");
         checkPlayerDatabase();
@@ -586,7 +616,6 @@ $(document).ready(function () {
         addPlayerToDatabase(playerName, playerReady, playerNumber);
         console.log("about to go into prepareGameBoard");
 
-        initGameBoard();
     });
 
 

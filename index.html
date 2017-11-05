@@ -33,10 +33,13 @@
             <div class="navbar-header">
                 <a class="navbar-brand">Rock Paper Scissors Game</a>
             </div>
+            <div class="col-md-12">
+                <p id="playerTitle"></p>
+            </div>
             <div id="exitDiv">
-                        <button id="exit"  class="logout">
-                            <a onclick="removePlayer()">Exit Game</a>
-                        </button>
+                <button id="exit" class="logout">
+                    <a onclick="removePlayerAndChats()">Exit Game</a>
+                </button>
             </div>
         </div>
     </nav>
@@ -56,6 +59,7 @@
                     </div>
                 </div>
                 <div class="row">
+
                     <div class="col-md-12">
                         <div class="panel panel-default" id="rpsEntry">
                             <div class="panel-heading">
@@ -124,7 +128,7 @@
                             </div>
                         </div>
                     </div>
-                    |</div>
+                </div>
                 <div class="row">
                     <div class="col-md-12">
                         <p id="winMsg"></p>
