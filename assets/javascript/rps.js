@@ -6,12 +6,12 @@
 // Initialize Firebase
 //------------------------------------//
 var config = {
-    apiKey: "AIzaSyC4yhH7mbTZRBvoDeu3PeMbUBTSlFSIoP0",
-    authDomain: "rockpaperscissorsgame-2915c.firebaseapp.com",
-    databaseURL: "https://rockpaperscissorsgame-2915c.firebaseio.com",
-    projectId: "rockpaperscissorsgame-2915c",
-    storageBucket: "rockpaperscissorsgame-2915c.appspot.com",
-    messagingSenderId: "64228922403"
+    apiKey: "AIzaSyDknU74vZAxtuo3n9TJSkW9xiyNhUVT1g0",
+    authDomain: "rpsgame-1cb55.firebaseapp.com",
+    databaseURL: "https://rpsgame-1cb55.firebaseio.com",
+    projectId: "rpsgame-1cb55",
+    storageBucket: "",
+    messagingSenderId: "965858725523"
 };
 firebase.initializeApp(config);
 
@@ -21,11 +21,26 @@ var database = firebase.database();
 // Create a variable to reference specific sections of the database.
 var chatRef = database.ref("/chat");
 var gameRef = database.ref("/game");
+var playerRef = database.ref("/player");
+var playerQuery = database.ref("player").orderByKey();
+var chatQuery = database.ref("chat").orderByChild("timestamp");
+//--------------------------
 var connectionsRef = database.ref("/connections");
 var connectedRef = database.ref(".info/connected");
 
-
+//---------------------------//
 // global variables
+//---------------------------//
+var playerName = "player";
+var playerReady = false;
+var playerChoiceMade = false;
+var playerChoice = "";
+var playerWinCntr = 0;
+var playerLossCntr = 0;
+var playerNumber = 0;
+var playerCount = 0;
+var activePlayers = [];
+var removePlayerNumber;
 
 var player1Name = "player1";
 var player1Ready = false;
@@ -33,7 +48,6 @@ var player1ChoiceMade = false;
 var player1Choice = "";
 var player1WinCntr = 0;
 var player1LossCntr = 0;
-
 var player2Name = "player2";
 var player2Ready = false;
 var player2ChoiceMade = false;
@@ -42,14 +56,12 @@ var player2WinCntr = 0;
 var player2LossCntr = 0;
 var tieCntr = 0;
 var brandNewGame = true;
-var name1Input;
-var name1Submit;
-var name1Label;
-var name1Form;
-var name2Input;
-var name2Submit;
-var name2Label;
-var name2Form;
+//---------------------------
+var nameInput;
+var nameSubmit;
+var nameLabel;
+var nameForm;
+//---------------------------
 var panelHeadingDiv;
 var h3;
 var panelBodyDiv;
@@ -63,41 +75,33 @@ var rpsPaperImg;
 var rpsScissorsLabel;
 var rpsScissorsImg;
 
-var chatbox = 'chatbox';
-var chatbox1 = '';
-var chatbox2 = '';
-var player1Chat = "";
-var player2Chat = "";
+var chatbox;
+var playerChat = "";
+var chatNumber = "";
+var timestamp;
 
 
 
-
-
+//------------------------------------------------------//
+// display the panel for users to enter thier names
+//------------------------------------------------------//
 function displayEnterNamePanel() {
-    name1Label = $("<label>");
-    name1Label.addClass("player1Name");
-    name1Label.attr("for", "player1NameInput");
-    name1Label.text("Player 1");
-    name1Input = $("<input>");
-    name1Input.attr("type", "text");
-    name1Input.attr("id", "player1Nme");
-    name1Input.addClass("form-control");
-    name1Input.attr("placeholder", "Enter Player's name here");
-    $("#player1Name").append(name1Label);
-    $("#player1Name").append(name1Input);
-    name2Label = $("<label>");
-    name2Label.addClass("player2Name");
-    name2Label.attr("for", "player2NameInput");
-    name2Label.text("Player 2");
-    name2Input = $("<input>");
-    name2Input.attr("type", "text");
-    name2Input.attr("id", "player2Nme");
-    name2Input.addClass("form-control");
-    name2Input.attr("placeholder", "Enter Player's name here");
-    $("#player2Name").append(name2Label);
-    $("#player2Name").append(name2Input);
+    nameLabel = $("<label>");
+    nameLabel.addClass("playerName");
+    nameLabel.attr("for", "playerNameInput");
+    nameLabel.text("Player");
+    nameInput = $("<input>");
+    nameInput.attr("type", "text");
+    nameInput.attr("id", "playerNme");
+    nameInput.addClass("form-control");
+    nameInput.attr("placeholder", "Enter Player's name here");
+    $("#playerName").append(nameLabel);
+    $("#playerName").append(nameInput);
 }
 
+//------------------------------------------------------//
+// display the rps panel for the game board
+//------------------------------------------------------//
 function displayrpsEntryPanel() {
     panelHeadingDiv = $("<div>");
     panelHeadingDiv.addClass("panel-heading");
@@ -117,21 +121,105 @@ function displayrpsEntryPanel() {
     // var rpsScissorsImg;
 }
 
+//------------------------------------------------------//
+// display the panel to display game stats
+//------------------------------------------------------//
 function displayrpsStatsPanel() {
-
 }
 
-function updateDatabase() {
-    console.log("im in updateDatabase");
+//------------------------------------------------------//
+// Remove a player if they click the exit button
+//------------------------------------------------------//
+function removePlayer() {
+    removePlayerNumber = parseInt($("#exit").val());
+    console.log("removePlayerNumber " + removePlayerNumber);
+    database.ref("player").orderByChild("playerNumber").equalTo(removePlayerNumber).once('child_added', function (snapshot) {
+        snapshot.ref.remove();
+    });
+    window.location = 'close.html';
+}
+
+//------------------------------------------------------//
+// add players to the player database.  Player database
+// allows only 2 players
+//------------------------------------------------------//
+function addPlayerToDatabase(playerName, playerReady, playerNumber) {
+    console.log("im in addPlayerDatabase");
+    playerRef.once("value", function (snapshot) {
+        playerCount = snapshot.numChildren();
+        console.log("playerCount " + playerCount);
+        var existingPlayerNum;
+        console.log("playerCount " + playerCount);
+        if (playerCount < 2) {
+            if (playerCount === 0) {
+                playerNumber = 1;
+                $("#exit").attr("value", playerNumber);
+                console.log("added playerNumber to exit button");
+            } else if (playerCount === 1) {
+
+                var existingPlayer = snapshot.val().playerNumber;
+                if (existingPlayer === 1) {
+                    playerNumber = 1;
+                    $("#exit").attr("value", playerNumber);
+                } else {
+                    playerNumber = 2;
+                    $("#exit").attr("value", playerNumber);
+                }
+                // existingPlayerNum = activePlayers[0];
+                // if (existingPlayerNum === 1) {
+                //     playerNumber = 2;
+                // } else {
+                //     playerNumber = 1;
+                // }   
+            }
+
+            playerRef.push({
+                playerName: playerName,
+                playerReady: playerReady,
+                playerNumber: playerNumber
+            });
+        }
+    });
+}
+
+//------------------------------------------------------//
+// check the player database to make sure there are not
+// already 2 players before adding the player
+//------------------------------------------------------//
+function checkPlayerDatabase() {
+    console.log("in checkPlayerDatabase()");
+    playerRef.on("value", function (snapshot) {
+        playerCount = snapshot.numChildren();
+        console.log("playerCount " + playerCount);
+        activePlayers = [];
+        if (playerCount >= 2) {
+            console.log("game is full");
+           
+        }
+        playerQuery.once("value").then(function (snap) {
+            snap.forEach(function (snapshot) {
+                var playerNumber = snapshot.val().playerNumber;
+                var playerName = snapshot.val().playerName;
+                activePlayers.push(playerNumber);
+                console.log("activePlayers: " + activePlayers.toString());
+
+            })
+        });
+    });
+}
+
+//------------------------------------------------------//
+// Initialize the game database
+//------------------------------------------------------//
+function initGameDatabase() {
+    console.log("im in addGameDatabase");
     gameRef.set({
         player1Name: player1Name,
-        player1Ready: player1Ready,
         player1ChoiceMade: player1ChoiceMade,
         player1Choice: player1Choice,
         player1WinCntr: player1WinCntr,
         player1LossCntr: player1LossCntr,
         player2Name: player2Name,
-        player2Ready: player2Ready,
         player2ChoiceMade: player2ChoiceMade,
         player2Choice: player2Choice,
         player2WinCntr: player2WinCntr,
@@ -142,16 +230,129 @@ function updateDatabase() {
 
 }
 
-function updateChatDatabase() {
-    console.log("im in updateChatDatabase");
-    chatRef.set({
-        chatbox: chatbox,
-        player1Chat: player1Chat,
-        player2Chat: player2Chat
+
+//-------------------------------------------------//
+// obsolete - this function is not being used
+//-------------------------------------------------//
+function updateGameDatabase() {
+    console.log("im in updateGameDatabase");
+    gameRef.set({
+        player1Name: player1Name,
+        player1ChoiceMade: player1ChoiceMade,
+        player1Choice: player1Choice,
+        player1WinCntr: player1WinCntr,
+        player1LossCntr: player1LossCntr,
+        player2Name: player2Name,
+        player2ChoiceMade: player2ChoiceMade,
+        player2Choice: player2Choice,
+        player2WinCntr: player2WinCntr,
+        player2LossCntr: player2LossCntr,
+        tieCntr: tieCntr,
+        brandNewGame: brandNewGame
     });
 
 }
 
+//-------------------------------------------------//
+// Update player1 name in the game database
+//-------------------------------------------------//
+function updateGameDatabaseP1Name() {
+    console.log("im in updateGameDatabaseeforPlayer1");
+    gameRef.update({
+        player1Name: player1Name
+    });
+
+}
+
+//-------------------------------------------------//
+// Update player2 name in the game database
+//-------------------------------------------------//
+function updateGameDatabaseP2Name() {
+    console.log("im in updateGameDatabaseeforPlayer2");
+    gameRef.update({
+        player2Name: player2Name
+    });
+
+}
+
+//-------------------------------------------------//
+// Update player1 choice in the game database
+//-------------------------------------------------//
+function updateGameDatabaseforPlayer1() {
+    console.log("im in updateGameDatabaseeforPlayer1");
+    gameRef.update({
+        player1ChoiceMade: player1ChoiceMade,
+        player1Choice: player1Choice
+    });
+
+}
+
+//-------------------------------------------------//
+// Update player2 choice in the game database
+//-------------------------------------------------//
+function updateGameDatabaseforPlayer2() {
+    console.log("im in updateGameDatabaseeforPlayer1");
+    gameRef.update({
+        player2ChoiceMade: player2ChoiceMade,
+        player2Choice: player2Choice
+    });
+
+}
+
+//-----------------------------------------------------//
+// Update stats in the game database when player1 wins
+//-----------------------------------------------------//
+function updateP1WinInGameDatabase() {
+    console.log("im in updateP1WinGameDatabase");
+    gameRef.update({
+        player1WinCntr: player1WinCntr,
+        player2LossCntr: player2LossCntr
+
+    });
+
+}
+//-----------------------------------------------------//
+// Update stats in the game database when player2 wins
+//-----------------------------------------------------//
+function updateP2WinInGameDatabase() {
+    console.log("im in updateP2WinGameDatabase");
+    gameRef.update({
+        player1LossCntr: player1LossCntr,
+        player2WinCntr: player2WinCntr
+    });
+
+}
+
+//----------------------------------------------------------//
+// Update stats in the game database when there is a tie
+//----------------------------------------------------------//
+function updateTieCntrInGameDatabase() {
+    console.log("im in updateTieCntrGameDatabase");
+    gameRef.update({
+        tieCntr: tieCntr
+    });
+
+}
+
+//----------------------------------------------------------//
+// Add a chat row to the chat database
+//----------------------------------------------------------//
+function updateChatDatabase(playerChat, chatNumber, playerName, timestamp) {
+    console.log("im in updateChatDatabase");
+    chatRef.push({
+        playerChat: playerChat,
+        playerNumber: chatNumber,
+        playerName: playerName,
+        timestamp: timestamp
+    });
+
+}
+
+//--------------------------------------------------------------//
+// determine who wins the game and update game database and
+// send out winning message, then reset the game database so it
+// is ready for the next game
+//--------------------------------------------------------------//
 function determineWhoWins() {
     console.log("im in determineWhoWins");
     gameRef.once("value", function (snapshot) {
@@ -161,19 +362,23 @@ function determineWhoWins() {
                 if (snapshot.val().player2Choice === "r") {
                     tieCntr = snapshot.val().tieCntr + 1;
                     $("#winMsg").text("It's a tie!  Pick again!");
-                    updateDatabase();
+                    $("#selection1").text("");
+                    updateTieCntrInGameDatabase();
                     resetDatabaseForNextGame();
                 } else if (snapshot.val().player2Choice === "p") {
                     player1LossCntr = snapshot.val().player1LossCntr + 1;
                     player2WinCntr = snapshot.val().player2WinCntr + 1;
                     $("#winMsg").text(snapshot.val().player2Name + " Wins!  Pick again!");
-                    updateDatabase();
+                    $("#selection1").text("");
+                    updateP2WinInGameDatabase();
                     resetDatabaseForNextGame();
                 } else if (snapshot.val().player2Choice === "s") {
                     player1WinCntr = snapshot.val().player1WinCntr + 1;
                     player2LossCntr = snapshot.val().player2LossCntr + 1;
                     $("#winMsg").text(snapshot.val().player1Name + " Wins!  Pick again!");
-                    updateDatabase();
+                    $("#selection1").text("");
+                    $("#selection2").text("");
+                    updateP1WinInGameDatabase();
                     resetDatabaseForNextGame();
                 }
             } else if (snapshot.val().player1Choice === "p") {
@@ -181,18 +386,24 @@ function determineWhoWins() {
                     player1WinCntr = snapshot.val().player1WinCntr + 1;
                     player2LossCntr = snapshot.val().player2LossCntr + 1;
                     $("#winMsg").text(snapshot.val().player1Name + " Wins!  Pick again!");
-                    updateDatabase();
+                    $("#selection1").text("");
+                    $("#selection2").text("");
+                    updateP1WinInGameDatabase();
                     resetDatabaseForNextGame();
                 } else if (snapshot.val().player2Choice === "p") {
                     tieCntr = snapshot.val().tieCntr + 1;
                     $("#winMsg").text("It's a tie!  Pick again!");
-                    updateDatabase();
+                    $("#selection1").text("");
+                    $("#selection2").text("");
+                    updateTieCntrInGameDatabase();
                     resetDatabaseForNextGame();
                 } else if (snapshot.val().player2Choice === "s") {
                     player1LossCntr = snapshot.val().player1LossCntr + 1;
                     player2WinCntr = snapshot.val().player2WinCntr + 1;
                     $("#winMsg").text(snapshot.val().player2Name + " Wins!  Pick again!");
-                    updateDatabase();
+                    $("#selection1").text("");
+                    $("#selection2").text("");
+                    updateP2WinInGameDatabase();
                     resetDatabaseForNextGame();
                 }
             } else if (snapshot.val().player1Choice === "s") {
@@ -201,19 +412,25 @@ function determineWhoWins() {
                     player1LossCntr = snapshot.val().player1LossCntr + 1;
                     player2WinCntr = snapshot.val().player2WinCntr + 1;
                     $("#winMsg").text(snapshot.val().player2Name + " Wins!  Pick again!");
+                    $("#selection1").text("");
+                    $("#selection2").text("");
                     $("#name2TieCntr").text(snapshot.val().tieCntr);
-                    updateDatabase();
+                    updateP2WinInGameDatabase();
                     resetDatabaseForNextGame();
                 } else if (snapshot.val().player2Choice === "p") {
                     player1WinCntr = snapshot.val().player1WinCntr + 1;
                     player2LossCntr = snapshot.val().player2LossCntr + 1;
                     $("#winMsg").text(snapshot.val().player1Name + " Wins!  Pick again!");
-                    updateDatabase();
+                    $("#selection1").text("");
+                    $("#selection2").text("");
+                    updateP1WinInGameDatabase();
                     resetDatabaseForNextGame();
                 } else if (snapshot.val().player2Choice === "s") {
                     tieCntr = snapshot.val().tieCntr + 1;
                     $("#winMsg").text("It's a tie!  Pick again!");
-                    updateDatabase();
+                    $("#selection1").text("");
+                    $("#selection2").text("");
+                    updateTieCntrInGameDatabase();
                     resetDatabaseForNextGame();
                 }
             }
@@ -225,37 +442,111 @@ function determineWhoWins() {
                 $("#name2Losses").text(snapshot.val().player2LossCntr);
                 $("#name2TieCntr").text(snapshot.val().tieCntr);
             });
-            
+
         }
     });
 }
 
-
-
-
+//-----------------------------------------------------//
+// reset the database so it is ready for the next game
+//-----------------------------------------------------//
 function resetDatabaseForNextGame() {
     console.log("im in resetDatabaseForNextGame");
     player1ChoiceMade = false;
     player1Choice = "";
     player2ChoiceMade = false;
     player2Choice = "";
-    updateDatabase();
+    updateGameDatabaseforPlayer1();
+    updateGameDatabaseforPlayer2();
     $('#player1').removeClass("playerAlt");
     $('#player1').addClass("player");
     $('#player2').removeClass("playerAlt");
     $('#player2').addClass("player");
-
 }
 
-function prepareGameBoard() {
-    gameRef.once("value", function (snapshot) {
-        if (snapshot.val().player1Ready && snapshot.val().player2Ready) {
-            console.log("players are ready");
-            $("#enterNames").remove();
+
+//--------------------------------------------------------//
+// initialize the gameboard once the players are ready
+// to play
+//--------------------------------------------------------//
+function initGameBoard() {
+    console.log("players are ready");
+    $("#enterNames").remove();
+    playerQuery.on("child_added", function (snapshot) {
+        if (snapshot.val().playerNumber === 1) {
+            $("#player1").text(snapshot.val().playerName + ":");
+            $("#name1").text(snapshot.val().playerName);
+            $("#chatName1").text(snapshot.val().playerName + ":");
+            // $("#chatForm1").show();
+            // $("#chatName1").show();
+            // $("#userMsg1").show();
+            // $("#submitMsg1").show();
+            // $("#rps1").show();
+            // $("#chatForm2").hide();
+            // $("#chatName2").hide();
+            // $("#userMsg2").hide();
+            // $("#submitMsg2").hide();
+            // $("#rps2").hide();
+            player1Name = snapshot.val().playerName;
+            updateGameDatabaseP1Name();
+        } else {
+            $("#player2").text(snapshot.val().playerName + ":");
+            $("#name2").text(snapshot.val().playerName);
+            $("#chatName2").text(snapshot.val().playerName + ":");
+            // $("#chatForm2").show();
+            // $("#chatName2").show();
+            // $("#userMsg2").show();
+            // $("#submitMsg2").show();
+            // $("#rps2").show();
+            // $("#chatForm1").hide();
+            // $("#chatName1").hide();
+            // $("#userMsg1").hide();
+            // $("#submitMsg1").hide();
+            // $("#rps1").hide();
+            player2Name = snapshot.val().playerName;
+            updateGameDatabaseP2Name();
         }
     });
 }
 
+//------------------------------------------------//
+// display the chat messages in the chat window
+//------------------------------------------------//
+function displayChat() {
+    $("#chatbox").empty();
+    chatQuery.on("child_added", function (snapshot) {
+        chatbox = $("<p>");
+        if (snapshot.val().playerNumber === 1) {
+            chatbox.attr("id", 'play1Chat');
+        } else if (snapshot.val().playerNumber === 2) {
+            chatbox.attr("id", 'play2Chat');
+        }
+        chatbox.text(snapshot.val().playerName + ": " + snapshot.val().playerChat);
+        $("#chatbox").append(chatbox);
+    });
+}
+
+//------------------------------------------------//
+// process Player 1's rock paper scissor choice
+//------------------------------------------------//
+function processPlayer1Choice() {
+    player1ChoiceMade = true;
+    updateGameDatabaseforPlayer1();
+    determineWhoWins();
+    $('#player1').removeClass("player");
+    $('#player1').addClass("playerAlt");
+}
+
+//------------------------------------------------//
+// process Player 2's rock paper scissor choice
+//------------------------------------------------//
+function processPlayer2Choice() {
+    player2ChoiceMade = true;
+    updateGameDatabaseforPlayer2();
+    determineWhoWins();
+    $('#player2').removeClass("player");
+    $('#player2').addClass("playerAlt");
+}
 
 //----------------------//
 // main processing
@@ -264,27 +555,13 @@ $(document).ready(function () {
 
     if (brandNewGame) {
         //build the EnterNames Panel of HTML
+        console.log("IN BRAND NEW GAME");
+        initGameDatabase();
         displayEnterNamePanel();
-        player1Name = "player1";
-        player1Ready = false;
-        player1ChoiceMade = false;
-        player1Choice = "";
-        player1WinCntr = 0;
-        player1LossCntr = 0;
-        player2Name = "player2";
-        player2Ready = false;
-        player2ChoiceMade = false;
-        player2Choice = "";
-        player2WinCntr = 0;
-        player2LossCntr = 0;
-        tieCntr = 0;
-        theInterval = 0;
-        secondsToWait = 5;
-        brandNewGame = false;
-        chatbox = '';
-        player1Chat = "";
-        player2Chat = "";
-        updateDatabase();
+        // $("#chatForm1").hide();
+        // $("#chatForm2").hide();
+        // $("#rps2").hide();
+        // updateGameDatabase();
     } else {
         console.log("nothing");
 
@@ -293,127 +570,98 @@ $(document).ready(function () {
         //Build the rpsStats Panel
     }
 
-
-    // Players 1 and 2 enter thier names
-    $("#player1Name").submit("#player1Nme", function (event) {
+    //-----------------------------------//
+    // Players enter thier names
+    // and then prepare the gameboard
+    //-----------------------------------//
+    $("#playerName").submit("#playerNme", function (event) {
         event.preventDefault();
-        player1Name = ($("#player1Nme").val().trim().charAt(0).toUpperCase() +
-            $("#player1Nme").val().trim().substr(1).toLowerCase());
-        console.log("player1 Name: " + player1Name);
-        player1Ready = true;
-        updateDatabase();
-        prepareGameBoard();
-        // $("#player1").text(snapshot.val().player1Name + ":");
-        // $("#name1").text(snapshot.val().player1Name);
+        playerName = ($("#playerNme").val().trim().charAt(0).toUpperCase() +
+            $("#playerNme").val().trim().substr(1).toLowerCase());
+        console.log("player Name: " + playerName);
+        playerReady = true;
+        console.log("about to go into checkPlayerDatabase()");
+        checkPlayerDatabase();
+        console.log("about to go into addPlayerToDatabase");
+        addPlayerToDatabase(playerName, playerReady, playerNumber);
+        console.log("about to go into prepareGameBoard");
+
+        initGameBoard();
     });
 
-    $("#player2Name").submit("#player2Nme", function (event) {
-        event.preventDefault();
-        player2Name = ($("#player2Nme").val().trim().charAt(0).toUpperCase() +
-            $("#player2Nme").val().trim().substr(1).toLowerCase());
-        console.log("player2 Name: " + player2Name);
-        player2Ready = true;
-        updateDatabase();
-        prepareGameBoard();
-        // $("#player2").text(snapshot.val().player2Name + ":");
-        // $("#name2").text(snapshot.val().player2Name);
-    });
 
-    gameRef.on("value", function (snapshot) {
-        $("#player1").text(snapshot.val().player1Name + ":");
-        $("#player2").text(snapshot.val().player2Name + ":");
-        $("#name1").text(snapshot.val().player1Name);
-        $("#name2").text(snapshot.val().player2Name);
-        $("#chatName1").text(snapshot.val().player1Name + ":");
-        $("#chatName2").text(snapshot.val().player2Name + ":");
-    });
-
+    //------------------------------------------------------------------------//
     // player1 and player2 play the game, capture thier selections here
+    //------------------------------------------------------------------------//
     $('#rockP1').on('click', function (event) {
+        event.preventDefault();
         player1Choice = $("#rockP1").val().trim();
-        player1ChoiceMade = true;
-        updateDatabase();
-        console.log("p1 rock clicked: " + player1Choice);
-        determineWhoWins();
-        $('#player1').removeClass("player");
-        $('#player1').addClass("playerAlt");
+        $("#selection1").text("ROCK");
+        processPlayer1Choice();
+    });
 
-    });
     $('#paperP1').on('click', function (event) {
+        event.preventDefault();
         player1Choice = $("#paperP1").val().trim();
-        player1ChoiceMade = true;
-        updateDatabase();
-        console.log("p1 paper clicked: " + player1Choice);
-        determineWhoWins();
-        $('#player1').removeClass("player");
-        $('#player1').addClass("playerAlt");
+        $("#selection1").text("PAPER");
+        processPlayer1Choice();
     });
+
     $('#scissorsP1').on('click', function (event) {
+        event.preventDefault();
         player1Choice = $("#scissorsP1").val().trim();
-        player1ChoiceMade = true;
-        updateDatabase();
-        console.log("p1 scissors clicked: " + player1Choice);
-        determineWhoWins();
-        $('#player1').removeClass("player");
-        $('#player1').addClass("playerAlt");
+        $("#selection1").text("SCISSORS");
+        processPlayer1Choice();
     });
 
     $('#rockP2').on('click', function (event) {
+        event.preventDefault();
         player2Choice = $("#rockP2").val().trim();
-        player2ChoiceMade = true;
-        updateDatabase();
-        console.log("p2 rock clicked: " + player2Choice);
-        determineWhoWins();
-        $('#player2').removeClass("player");
-        $('#player2').addClass("playerAlt");
+        $("#selection2").text("ROCK");
+        processPlayer2Choice();
     });
+
     $('#paperP2').on('click', function (event) {
+        event.preventDefault();
         player2Choice = $("#paperP2").val().trim();
-        player2ChoiceMade = true;
-        updateDatabase();
-        console.log("p2 paper clicked: " + player2Choice);
-        determineWhoWins();
-        $('#player2').removeClass("player");
-        $('#player2').addClass("playerAlt");
+        $("#selection2").text("PAPER");
+        processPlayer2Choice();
     });
+
     $('#scissorsP2').on('click', function (event) {
+        event.preventDefault();
         player2Choice = $("#scissorsP2").val().trim();
-        player2ChoiceMade = true;
-        updateDatabase();
-        console.log("p2 scissors clicked: " + player2Choice);
-        determineWhoWins();
-        $('#player2').removeClass("player");
-        $('#player2').addClass("playerAlt");
+        $("#selection2").text("SCISSORS");
+        processPlayer2Choice();
     });
 
 
-    // Players 1 and 2 enter thier chats
+    //---------------------------------------------//
+    // Players 1 and 2 enter thier chat messages
+    //---------------------------------------------//
     $("#submitMsg1").on("click", function (event) {
         event.preventDefault();
-        player1Chat = $("#userMsg1").val().trim();
+        chatNumber = 1;
+        playerChat = $("#userMsg1").val().trim();
+        playerName = player1Name;
         $("#userMsg1").val("");
-        chatbox += player1Chat;
-        updateChatDatabase();
-        chatbox1 = $("<p>");
-        chatbox1.attr("id", 'play1Chat');
-        chatRef.once("value", function (snapshot) {
-            chatbox1.text(snapshot.val().player1Chat);
-        });
-        $("#chatbox").append(chatbox1); 
+        timestamp = Date.now();
+        updateChatDatabase(playerChat, chatNumber, playerName, timestamp);
+        displayChat();
     });
+
 
     $("#submitMsg2").on("click", function (event) {
         event.preventDefault();
-        player2Chat = $("#userMsg2").val().trim();
+        chatNumber = 2;
+        playerChat = $("#userMsg2").val().trim();
+        playerName = player2Name;
         $("#userMsg2").val("");
-        chatbox += player2Chat;
-        updateChatDatabase();
-        chatbox2 = $("<p>");
-        chatbox2.attr("id", 'play2Chat');
-        chatRef.once("value", function (snapshot) {
-            chatbox2.text(snapshot.val().player2Chat);
-        });
-        $("#chatbox").append(chatbox2);   
+        timestamp = Date.now();
+        updateChatDatabase(playerChat, chatNumber, playerName, timestamp);
+        console.log("going into diplY CHAT2");
+        displayChat();
     });
+
 
 });

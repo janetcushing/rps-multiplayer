@@ -27,6 +27,9 @@ h1 {
     font-size: 46px;
 }
 
+.closeOut, #bye{
+    align-content: center;
+}
 .player {
     color: red;
 }

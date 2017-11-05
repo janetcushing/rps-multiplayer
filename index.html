@@ -33,6 +33,11 @@
             <div class="navbar-header">
                 <a class="navbar-brand">Rock Paper Scissors Game</a>
             </div>
+            <div id="exitDiv">
+                        <button id="exit"  class="logout">
+                            <a onclick="removePlayer()">Exit Game</a>
+                        </button>
+            </div>
         </div>
     </nav>
 
@@ -44,23 +49,12 @@
                     <div class="col-md-12">
                         <div class="panel panel-default">
                             <div class="panel-body" id="enterNames">
-                                <form class="form-group" id="player1Name">
-                                </form>
-                                <form class="form-group" id="player2Name">
+                                <form class="form-group" id="playerName">
                                 </form>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- <div class="row">
-                    <div class="col-md-12">
-                        <div id="timer">
-                            <p>TimeRemaining:&nbsp;
-                                <span id="secondsLeft">5</span>
-                            </p>
-                        </div>
-                    </div>
-                </div> -->
                 <div class="row">
                     <div class="col-md-12">
                         <div class="panel panel-default" id="rpsEntry">
@@ -68,9 +62,9 @@
                                 <h3 class="panel-title">Click Rock, Paper or Scissors: </h3>
                             </div>
                             <div class="panel-body">
-                                <form>
+                                <form id="rps1">
                                     <div class="form-group">
-                                        <label for="player1" id="player1" class="player">Player 1: </label>
+                                        <label for="player1" id="player1" class="player">Player: 1</label>
                                         <form id="radioButtonsP1">
                                             <div>
                                                 <span style="display:none;">
@@ -91,13 +85,14 @@
                                                 <label for="scissorsP1" id="scissorsP1">
                                                     <img src="assets/images/Scissors_icon_black.png" height="50" alt="scissors.png">
                                                 </label>
+                                                <span id="selection1"></span>
                                             </div>
                                         </form>
-
                                     </div>
                                 </form>
 
-                                <form>
+                                <!-- rock paper scissors game play section -->
+                                <form id="rps2">
                                     <div class="form-group">
                                         <label for="player2" id="player2" class="player">Player 2:</label>
                                         <form id="radioButtonsP2">
@@ -120,10 +115,12 @@
                                                 <label for="scissorsP2" id="scissorsP2">
                                                     <img src="assets/images/Scissors_icon_black.png" height="50" alt="scissors.png">
                                                 </label>
+                                                <span id="selection2"></span>
                                             </div>
                                         </form>
                                     </div>
                                 </form>
+
                             </div>
                         </div>
                     </div>
@@ -133,6 +130,7 @@
                         <p id="winMsg"></p>
                     </div>
                 </div>
+                <!-- rock paper scissors display stats section -->
                 <div class="row">
                     <div class="col-md-12">
                         <div class="panel panel-default" id="rpsStats">
@@ -169,30 +167,32 @@
                     </div>
                 </div>
             </div>
+            <!-- chat window section -->
             <div class="col-md-6" id="chatWindow">
-                <div id="chat">chat window
+                <div id="chat">Chat Window
                     <div id="menu">
-                        <p class="welcome">Welcome, Players
+                        <!-- <p class="welcome">Welcome, Players
                             <b></b>
-                        </p>
+                        </p> -->
                         <!-- <p class="logout">
                             <a id="exit" href="#">Exit Chat</a>
                         </p> -->
                         <div style="clear:both"></div>
                     </div>
 
-                    <div id="chatbox"></div>
+                    <div id="chatbox">
+                    </div>
 
-                    <form name="message" action="">
-                            <label for="submitmsg1" id="chatName1">Player 1:</label>
+                    <form name="message" id="chatForm1" action="">
+                        <label for="submitmsg1" id="chatName1">Player: 1</label>
                         <input name="userMsg" type="text" id="userMsg1" size="63" />
                         <input name="submitMsg" type="submit" id="submitMsg1" value="Send" />
                     </form>
-                    <form name="message" action="">
-                            <label for="submitMsg2" id="chatName2">Player 2:</label>
-                            <input name="userMsg" type="text" id="userMsg2" size="63" />  
-                            <input name="submitMsg" type="submit" id="submitMsg2" value="Send" />
-                        </form>
+                    <form name="message" id="chatForm2" action="">
+                        <label for="submitMsg2" id="chatName2">Player 2:</label>
+                        <input name="userMsg" type="text" id="userMsg2" size="63" />
+                        <input name="submitMsg" type="submit" id="submitMsg2" value="Send" />
+                    </form>
                 </div>
             </div>
         </div>
