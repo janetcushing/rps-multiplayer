@@ -33,6 +33,11 @@
             <div class="navbar-header">
                 <a class="navbar-brand">Rock Paper Scissors Game</a>
             </div>
+            <div id="exitDiv">
+                        <button id="exit"  class="logout">
+                            <a onclick="removePlayer()" href="close.html">Exit Game</a>
+                        </button>
+            </div>
         </div>
     </nav>
 
@@ -59,7 +64,7 @@
                             <div class="panel-body">
                                 <form id="rps1">
                                     <div class="form-group">
-                                        <label for="player1" id="player1" class="player">Player: </label>
+                                        <label for="player1" id="player1" class="player">Player: 1</label>
                                         <form id="radioButtonsP1">
                                             <div>
                                                 <span style="display:none;">
@@ -80,12 +85,12 @@
                                                 <label for="scissorsP1" id="scissorsP1">
                                                     <img src="assets/images/Scissors_icon_black.png" height="50" alt="scissors.png">
                                                 </label>
-                                                <p id="selection1"></p>
+                                                <span id="selection1"></span>
                                             </div>
                                         </form>
                                     </div>
                                 </form>
-                              
+
                                 <!-- rock paper scissors game play section -->
                                 <form id="rps2">
                                     <div class="form-group">
@@ -110,12 +115,12 @@
                                                 <label for="scissorsP2" id="scissorsP2">
                                                     <img src="assets/images/Scissors_icon_black.png" height="50" alt="scissors.png">
                                                 </label>
-                                                <p id="selection2"></p>
+                                                <span id="selection2"></span>
                                             </div>
                                         </form>
                                     </div>
                                 </form>
-                               
+
                             </div>
                         </div>
                     </div>
@@ -164,11 +169,11 @@
             </div>
             <!-- chat window section -->
             <div class="col-md-6" id="chatWindow">
-                <div id="chat">chat window
+                <div id="chat">Chat Window
                     <div id="menu">
-                        <p class="welcome">Welcome, Players
+                        <!-- <p class="welcome">Welcome, Players
                             <b></b>
-                        </p>
+                        </p> -->
                         <!-- <p class="logout">
                             <a id="exit" href="#">Exit Chat</a>
                         </p> -->
@@ -179,7 +184,7 @@
                     </div>
 
                     <form name="message" id="chatForm1" action="">
-                        <label for="submitmsg1" id="chatName1">Player:</label>
+                        <label for="submitmsg1" id="chatName1">Player: 1</label>
                         <input name="userMsg" type="text" id="userMsg1" size="63" />
                         <input name="submitMsg" type="submit" id="submitMsg1" value="Send" />
                     </form>
